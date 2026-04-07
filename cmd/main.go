@@ -1,22 +1,32 @@
-package main 
+package main
 
 import (
+    "log"
 
-	"github.com/phantom5803/ticket-booking-project/internal/routes"
+    "github.com/phantom5803/ticket-booking-project/config"
+    "github.com/phantom5803/ticket-booking-project/internal/routes"
     "github.com/phantom5803/ticket-booking-project/pkg/database"
 
     "github.com/gin-gonic/gin"
 )
 
+func main() {
+    // Load env
+    config.LoadConfig()
 
-func main(){
-//initialize database connection
-database.ConnectDB()
+    // Connect DB
+    database.Connect()
 
-r := gin.Default()
+    // Start server
+    r := gin.Default()
 
-routes.SetupRoutes(r)
+    routes.SetupRoutes(r)
 
-r.Run(":8080")
-	
+    port := config.GetEnv("PORT")
+    if port == "" {
+        port = "8080"
+    }
+
+    log.Println("🚀 Server running on port", port)
+    r.Run(":" + port)
 }

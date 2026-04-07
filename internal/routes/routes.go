@@ -1,16 +1,51 @@
 package routes
 
 import (
-	"net/http"
-	"time"
-
 	"github.com/gin-gonic/gin"
+	"github.com/phantom5803/ticket-booking-project/internal/middleware"
+
+
+	"github.com/phantom5803/ticket-booking-project/internal/controllers"
 )
 
-func HealthCheck(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"status":    "ok",
-		"timestamp": time.Now().Format(time.RFC3339),
-		"message":   "API is running",
-	})
+func SetupRoutes(r *gin.Engine) {
+
+    // Health check
+    r.GET("/health", controllers.HealthCheck)
+
+    // Auth routes
+    auth := r.Group("/auth")
+    {
+        auth.POST("/register", controllers.Register)
+        auth.POST("/login", controllers.Login)
+    }
+	protected := r.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+
+    // Event routes
+    events := r.Group("/events")
+    {
+        events.GET("/", controllers.GetEvents)
+        events.GET("/:id", controllers.GetEventByID)
+    }
+
+    // Show routes
+    shows := r.Group("/shows")
+    {
+        shows.GET("/:id/seats", controllers.GetSeatsByShow)
+    }
+
+    // Seat routes
+    seats := r.Group("/seats")
+    {
+        seats.POST("/book", controllers.BookSeats)
+    }
+
+    // Booking routes
+    bookings := r.Group("/bookings")
+    {
+        bookings.POST("/", controllers.CreateBooking)
+        bookings.GET("/:id", controllers.GetBookingByID)
+		bookings.GET("/all",controllers.GetAllBookings)
+    }
 }
