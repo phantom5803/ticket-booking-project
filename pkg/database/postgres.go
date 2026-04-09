@@ -5,7 +5,7 @@ import (
     "log"
 
     "github.com/phantom5803/ticket-booking-project/config"
-	"github.com/phantom5803/ticket-booking-project/internal/models"
+    "github.com/phantom5803/ticket-booking-project/internal/models"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
 )
@@ -13,6 +13,7 @@ import (
 var DB *gorm.DB
 
 func Connect() {
+	fmt.Println("Connecting to DB:", config.GetEnv("DB_NAME"))
     dsn := fmt.Sprintf(
         "host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
         config.GetEnv("DB_HOST"),
@@ -22,7 +23,17 @@ func Connect() {
         config.GetEnv("DB_PORT"),
         config.GetEnv("DB_SSLMODE"),
     )
-	DB.AutoMigrate(
+	
+    var err error
+    DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    if err != nil {
+        log.Fatal("❌ Failed to connect to database:", err)
+    }
+
+    log.Println("✅ Database connected")
+
+    // 👉 NOW run migrations
+    err = DB.AutoMigrate(
         &models.User{},
         &models.Event{},
         &models.Show{},
@@ -32,11 +43,9 @@ func Connect() {
         &models.Payment{},
     )
 
-    var err error
-    DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
     if err != nil {
-        log.Fatal("Failed to connect to database:", err)
+        log.Fatal("❌ Migration failed:", err)
     }
 
-    log.Println("✅ Database connected")
+    log.Println("✅ Tables migrated")
 }

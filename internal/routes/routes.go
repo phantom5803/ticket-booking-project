@@ -21,31 +21,33 @@ func SetupRoutes(r *gin.Engine) {
     }
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware())
+	{
 
     // Event routes
-    events := r.Group("/events")
+    events := protected.Group("/events")
     {
         events.GET("/", controllers.GetEvents)
         events.GET("/:id", controllers.GetEventByID)
     }
 
     // Show routes
-    shows := r.Group("/shows")
+    shows := protected.Group("/shows")
     {
         shows.GET("/:id/seats", controllers.GetSeatsByShow)
     }
 
     // Seat routes
-    seats := r.Group("/seats")
+    seats := protected.Group("/seats")
     {
         seats.POST("/book", controllers.BookSeats)
     }
 
     // Booking routes
-    bookings := r.Group("/bookings")
+    bookings := protected.Group("/bookings")
     {
         bookings.POST("/", controllers.CreateBooking)
         bookings.GET("/:id", controllers.GetBookingByID)
 		bookings.GET("/all",controllers.GetAllBookings)
     }
+}
 }
